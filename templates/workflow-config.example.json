@@ -1,0 +1,99 @@
+{
+  "$schema": "../schema/workflow-config.schema.json",
+  "project_name": "My Portfolio",
+  "project_type": "web",
+
+  "commands": {
+    "test": "pytest",
+    "test_fail_fast": "pytest -x",
+    "lint": "ruff check .",
+    "lint_fix": "ruff check --fix .",
+    "format": "ruff format .",
+    "format_check": "ruff format --check .",
+    "import_check": "python -c \"import app\"",
+    "start": "streamlit run app.py"
+  },
+
+  "paths": {
+    "source_dirs": ["app.py", "agents/", "components/", "engines/", "services/", "config/", "pages/"],
+    "test_dir": "tests/",
+    "test_pattern": "test_{module}.py",
+    "config_dir": "config/",
+    "data_dir": "data/",
+    "debug_dir": "scripts/debug/"
+  },
+
+  "architecture": {
+    "layers": [
+      { "name": "Presentation", "paths": ["app.py", "pages/", "styles.py"], "description": "UI, page routing" },
+      { "name": "Orchestration", "paths": ["components/"], "description": "Agent dispatch, chat rendering" },
+      { "name": "Reasoning", "paths": ["agents/"], "forbidden_imports": ["streamlit"], "description": "AI agents" },
+      { "name": "Service", "paths": ["engines/", "services/"], "forbidden_imports": ["streamlit"], "description": "Business logic" },
+      { "name": "Data", "paths": ["data/", "config/"], "forbidden_imports": ["streamlit"], "description": "Content, constants" }
+    ],
+    "state_management": {
+      "centralized": true,
+      "module": "state.py",
+      "rule": "Never access st.session_state directly outside state.py; new state variables must be initialized in init_session_state()"
+    },
+    "registration_points": [
+      {
+        "trigger": "New or modified agent file in agents/",
+        "required_in": ["config/app_config.py", "components/agent_dispatch.py", "app.py"],
+        "description": "Agent mode must be registered in all three places or it fails silently at runtime"
+      }
+    ]
+  },
+
+  "naming": {
+    "functions": "snake_case",
+    "classes": "PascalCase",
+    "constants": "UPPER_CASE",
+    "files": "snake_case"
+  },
+
+  "inspect": {
+    "pages": [
+      { "name": "Home", "path": "/" },
+      { "name": "About", "path": "/about" },
+      { "name": "Projects", "path": "/projects" },
+      { "name": "Gallery", "path": "/gallery" },
+      { "name": "Availability", "path": "/availability" },
+      { "name": "Guestbook", "path": "/guestbook" },
+      { "name": "Feedback Dashboard", "path": "/feedback_dashboard" }
+    ],
+    "viewports": [
+      { "name": "Mobile", "width": 375, "height": 812 },
+      { "name": "Tablet", "width": 768, "height": 1024 },
+      { "name": "Desktop", "width": 1440, "height": 900 }
+    ],
+    "lighthouse_threshold": 70,
+    "smoke_test": "Type a short test query in the chat input and verify a response appears"
+  },
+
+  "preflight": {
+    "secrets_patterns": ["API_KEY", "TOKEN", "SECRET", "PASSWORD", "CREDENTIAL"],
+    "secrets_files": [".streamlit/secrets.toml"],
+    "planning_artifacts": ["SPEC.md", "TODO.md", "TASKS.md"],
+    "debug_file_patterns": ["check_*.py", "debug_*.py", "verify_*.py", "test_results.txt"],
+    "debug_code_patterns": ["breakpoint()", "pdb", "ipdb"],
+    "debug_exclude_dirs": ["scripts/debug/"],
+    "gitignore_required": [".env", "*.log", ".DS_Store", "Thumbs.db", "*.bak", "*.tmp"]
+  },
+
+  "sweep": {
+    "dead_code_command": "ruff check . --select F401,F841",
+    "requirements_file": "requirements.txt"
+  },
+
+  "git": {
+    "commit_types": ["feat", "fix", "docs", "refactor", "test", "chore", "style", "perf"],
+    "scopes": ["ui", "config", "deps", "ci"],
+    "max_subject_length": 60
+  },
+
+  "docs": {
+    "folder_doc_names": ["README.md", "DESIGN.md", "BEHAVIOR.md"],
+    "folders_to_check": ["agents/", "engines/", "components/", "services/", "models/", "static/"]
+  }
+}

@@ -1,0 +1,203 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Claude Workflow Config",
+  "description": "Project-specific configuration for the claude-workflow plugin. Every slash command reads this file to adapt to your stack.",
+  "type": "object",
+  "required": ["project_name", "project_type", "commands", "paths", "naming", "git"],
+  "properties": {
+    "project_name": {
+      "type": "string",
+      "description": "Human-readable project name, used in journal headers and PR descriptions."
+    },
+    "project_type": {
+      "type": "string",
+      "enum": ["web", "api", "cli", "library"],
+      "description": "Determines which commands apply. /inspect only runs for 'web' projects."
+    },
+    "commands": {
+      "type": "object",
+      "description": "Shell commands for your stack's toolchain.",
+      "required": ["test", "lint", "format_check"],
+      "properties": {
+        "test": { "type": "string", "description": "Run full test suite. E.g. pytest, npm test, cargo test" },
+        "test_fail_fast": { "type": "string", "description": "Run tests, stop on first failure. E.g. pytest -x" },
+        "lint": { "type": "string", "description": "Check lint errors. E.g. ruff check ., eslint ." },
+        "lint_fix": { "type": "string", "description": "Auto-fix lint errors. E.g. ruff check --fix ., eslint --fix ." },
+        "format": { "type": "string", "description": "Format code. E.g. ruff format ., prettier --write ." },
+        "format_check": { "type": "string", "description": "Check formatting without modifying. E.g. ruff format --check ., prettier --check ." },
+        "import_check": { "type": ["string", "null"], "description": "Verify imports resolve. E.g. python -c \"import app\". Null to skip." },
+        "start": { "type": ["string", "null"], "description": "Start the app for browser testing. E.g. streamlit run app.py, npm run dev. Null for non-web projects." }
+      }
+    },
+    "paths": {
+      "type": "object",
+      "description": "Key directories in the project.",
+      "required": ["test_dir", "test_pattern"],
+      "properties": {
+        "source_dirs": {
+          "type": "array", "items": { "type": "string" },
+          "description": "Top-level source directories/files to scan. E.g. [\"src/\", \"app.py\"]"
+        },
+        "test_dir": { "type": "string", "description": "Where tests live. E.g. tests/, __tests__/" },
+        "test_pattern": { "type": "string", "description": "Test file naming convention. E.g. test_{module}.py, {module}.test.ts" },
+        "config_dir": { "type": ["string", "null"], "description": "Centralized config directory. E.g. config/, src/config/" },
+        "data_dir": { "type": ["string", "null"], "description": "Content/data directory (headless CMS pattern). Null if not used." },
+        "debug_dir": { "type": ["string", "null"], "description": "Directory for throwaway debug scripts, excluded from checks." }
+      }
+    },
+    "architecture": {
+      "type": "object",
+      "description": "Optional. Define layers and import restrictions for /conform checks.",
+      "properties": {
+        "layers": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "paths"],
+            "properties": {
+              "name": { "type": "string" },
+              "paths": { "type": "array", "items": { "type": "string" } },
+              "forbidden_imports": {
+                "type": "array", "items": { "type": "string" },
+                "description": "Packages that must not be imported in this layer."
+              },
+              "description": { "type": "string" }
+            }
+          }
+        },
+        "state_management": {
+          "type": "object",
+          "properties": {
+            "centralized": { "type": "boolean", "description": "If true, all state access goes through a single module." },
+            "module": { "type": "string", "description": "The state management module. E.g. state.py, src/store.ts" },
+            "rule": { "type": "string", "description": "Human-readable rule for state access." }
+          }
+        },
+        "registration_points": {
+          "type": "array",
+          "description": "Multi-file registration requirements. E.g. adding a route requires updating router + config.",
+          "items": {
+            "type": "object",
+            "properties": {
+              "trigger": { "type": "string", "description": "What change triggers this check." },
+              "required_in": { "type": "array", "items": { "type": "string" }, "description": "Files that must all be updated." },
+              "description": { "type": "string" }
+            }
+          }
+        }
+      }
+    },
+    "naming": {
+      "type": "object",
+      "required": ["functions", "classes", "constants", "files"],
+      "properties": {
+        "functions": { "type": "string", "enum": ["snake_case", "camelCase"] },
+        "classes": { "type": "string", "enum": ["PascalCase"] },
+        "constants": { "type": "string", "enum": ["UPPER_CASE", "SCREAMING_SNAKE_CASE"] },
+        "files": { "type": "string", "enum": ["snake_case", "kebab-case", "camelCase"] }
+      }
+    },
+    "inspect": {
+      "type": "object",
+      "description": "Browser inspection config. Only used when project_type is 'web'.",
+      "properties": {
+        "pages": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "path"],
+            "properties": {
+              "name": { "type": "string" },
+              "path": { "type": "string" }
+            }
+          }
+        },
+        "viewports": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": ["name", "width", "height"],
+            "properties": {
+              "name": { "type": "string" },
+              "width": { "type": "integer" },
+              "height": { "type": "integer" }
+            }
+          }
+        },
+        "lighthouse_threshold": { "type": "integer", "default": 70 },
+        "smoke_test": { "type": "string", "description": "Human-readable description of how to smoke-test the app." }
+      }
+    },
+    "preflight": {
+      "type": "object",
+      "description": "Extra settings for the /preflight quality gate.",
+      "properties": {
+        "secrets_patterns": {
+          "type": "array", "items": { "type": "string" },
+          "description": "Strings to scan for in source files. E.g. [\"API_KEY\", \"TOKEN\", \"SECRET\"]"
+        },
+        "secrets_files": {
+          "type": "array", "items": { "type": "string" },
+          "description": "Files that must be gitignored. E.g. [\".streamlit/secrets.toml\", \".env\"]"
+        },
+        "planning_artifacts": {
+          "type": "array", "items": { "type": "string" },
+          "description": "Files that must not be committed. E.g. [\"SPEC.md\", \"TODO.md\", \"TASKS.md\"]"
+        },
+        "debug_file_patterns": {
+          "type": "array", "items": { "type": "string" },
+          "description": "Glob patterns for debug files. E.g. [\"check_*.py\", \"debug_*.py\"]"
+        },
+        "debug_code_patterns": {
+          "type": "array", "items": { "type": "string" },
+          "description": "Code patterns that indicate debug leftovers. E.g. [\"breakpoint()\", \"console.log(\"]"
+        },
+        "debug_exclude_dirs": {
+          "type": "array", "items": { "type": "string" },
+          "description": "Directories excluded from debug checks."
+        },
+        "gitignore_required": {
+          "type": "array", "items": { "type": "string" },
+          "description": "Patterns that must be in .gitignore."
+        }
+      }
+    },
+    "sweep": {
+      "type": "object",
+      "description": "Optional. Settings for /sweep codebase cleanup.",
+      "properties": {
+        "dead_code_command": { "type": ["string", "null"], "description": "Command to find dead imports/variables. E.g. ruff check . --select F401,F841" },
+        "requirements_file": { "type": ["string", "null"], "description": "Dependency manifest. E.g. requirements.txt, package.json" }
+      }
+    },
+    "git": {
+      "type": "object",
+      "required": ["commit_types"],
+      "properties": {
+        "commit_types": {
+          "type": "array", "items": { "type": "string" },
+          "description": "Allowed commit type prefixes."
+        },
+        "scopes": {
+          "type": "array", "items": { "type": "string" },
+          "description": "Common scopes. Empty array means any scope is allowed."
+        },
+        "max_subject_length": { "type": "integer", "default": 60 }
+      }
+    },
+    "docs": {
+      "type": "object",
+      "description": "Settings for /docsync folder-level doc audit.",
+      "properties": {
+        "folder_doc_names": {
+          "type": "array", "items": { "type": "string" },
+          "description": "Doc file names to check in each folder. E.g. [\"README.md\", \"DESIGN.md\"]"
+        },
+        "folders_to_check": {
+          "type": "array", "items": { "type": "string" },
+          "description": "Folders to audit for doc freshness."
+        }
+      }
+    }
+  }
+}
