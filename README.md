@@ -14,12 +14,13 @@ Add to your project's `.claude/settings.json`:
 }
 ```
 
-Then create `.claude/workflow.config.json` in your repo (see [Configuration](#configuration)).
+Then run `/init` in your repo — it scans your codebase, asks a few questions, and generates all config and docs. Or create `.claude/workflow.config.json` manually (see [Configuration](#configuration)).
 
 ## Commands
 
 | Command | Purpose |
 |---------|---------|
+| `/init` | Bootstrap the plugin — scans your repo, generates config, CLAUDE.md, CONTRIBUTING.md |
 | `/kickoff` | Start work — paste tasks, get a SPEC, serial/parallel/hybrid recommendation |
 | `/hotfix` | Single urgent fix — same quality bar, less ceremony |
 | `/preflight` | Pre-PR quality gate (tests, lint, format, secrets, docs, regression scope) |
@@ -124,7 +125,7 @@ If a repo needs to customize one command, create a local `.claude/commands/<name
 
 - **`/fix`** — too tool-specific and trivially simple. If lint/format fails in `/preflight`, run your stack's fixer directly.
 - **Project-specific scaffolds** (like "add an agent mode") — these belong in the repo's local `.claude/commands/`.
-- **CLAUDE.md content** — the plugin provides workflow commands; your repo's CLAUDE.md defines architecture, conventions, and project-specific rules.
+- **CLAUDE.md content** — `/init` generates a starting-point CLAUDE.md, but the plugin itself doesn't mandate its contents. Your repo's CLAUDE.md is yours to customize.
 
 ## Contributing
 
