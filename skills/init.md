@@ -292,11 +292,15 @@ Paste your tasks below in any format. Then run `/kickoff`.
 
 ## This round
 
-[Paste tasks here — from GitHub Issues, Linear, Jira, Slack, or plain text]
+Dump everything you're considering — all tasks, bugs, features, ideas. Any format works (GitHub Issues, Linear tickets, Jira, Slack messages, plain text). This is your full backlog for this round.
 
-## How many to tackle
 
-[How many of the above tasks should Claude work on in this session?]
+
+## How many this session
+
+How many of the above should Claude tackle right now? Context windows are finite — pick a realistic number (1-3 is typical). Claude will prioritize, check dependencies, and plan just that subset.
+
+> Example: "2" or "the first 3" or "just the auth bug"
 ```
 
 ## Step 8: Summary
