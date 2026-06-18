@@ -31,6 +31,7 @@ Then run `/init` in your repo — it scans your codebase, asks a few questions, 
 | `/inspect` | Browser-level check via Chrome DevTools MCP (web projects only) |
 | `/docsync` | Audit folder-level docs for staleness |
 | `/sweep` | Codebase cleanup — dead code, debug artifacts, gitignore gaps (optional) |
+| `/audit-workflow` | Audit how the plugin is performing — config health, adherence, friction detection |
 
 ## Core Principles
 
@@ -100,6 +101,8 @@ See `schema/workflow-config.schema.json` for the full schema with descriptions o
 ## Workflow at a Glance
 
 ```
+/init (once per repo)
+  │
 /kickoff (or /hotfix for single fixes)
   │
   implement (TDD, extend-first) → commit per story
@@ -115,6 +118,8 @@ See `schema/workflow-config.schema.json` for the full schema with descriptions o
   /postmerge → verify main is healthy
   │
   next task (or done)
+  │
+/audit-workflow (periodically — after sprint, before major push)
 ```
 
 ## Overriding a command
