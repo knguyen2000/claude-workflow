@@ -4,6 +4,13 @@ Bootstrap the claude-workflow plugin in a new (or existing) repository. Scans th
 
 **Run once per repo.** If already initialized (`.claude/workflow.config.json` exists), warn the dev and ask before overwriting.
 
+## Step 0: Git setup
+
+1. If the directory is not a git repo, run `git init` and create an initial commit with existing files.
+2. Ensure you are on `main` (or `master`) — this is the only commit allowed directly on main: the bare repo bootstrap.
+3. **Create a branch:** `git checkout -b chore/init-workflow`. All workflow files are generated on this branch — never directly on main.
+4. After all files are generated and committed (Step 8), tell the dev to PR and merge the branch. If there's no remote yet, note that they'll need to add one before creating a PR.
+
 ## Step 1: Scan the codebase
 
 Before asking any questions, gather what you can automatically:
@@ -320,9 +327,10 @@ Report what was created/updated:
 - .gitignore (added: planning artifact patterns)
 
 ### Next steps
-1. Review CLAUDE.md — verify the Architecture and Key Files sections
-2. Paste tasks into TASKS.md
-3. Run /kickoff to start your first task
+1. Review the generated files on this branch (`chore/init-workflow`)
+2. Commit, push, and create a PR to merge into main
+3. After merge — review CLAUDE.md, verify Architecture and Key Files
+4. Paste tasks into TASKS.md and run /kickoff
 ```
 
 ## Rules
