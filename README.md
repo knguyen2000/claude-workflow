@@ -1,5 +1,9 @@
 # claude-workflow
 
+[![License](https://img.shields.io/badge/License-Apache_2.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
+
+> Created and maintained by **Ryan Nguyen** ([knguyen2000](https://github.com/knguyen2000))
+
 Strict, extensibility-first development workflow for Claude Code. Provides slash commands for task intake, quality gates, post-merge verification, and session recovery.
 
 Works with any stack. You configure your project's specifics once in a JSON file; the workflow commands adapt.
@@ -131,6 +135,18 @@ If a repo needs to customize one command, create a local `.claude/commands/<name
 - **`/fix`** — too tool-specific and trivially simple. If lint/format fails in `/preflight`, run your stack's fixer directly.
 - **Project-specific scaffolds** (like "add an agent mode") — these belong in the repo's local `.claude/commands/`.
 - **CLAUDE.md content** — `/init` generates a starting-point CLAUDE.md, but the plugin itself doesn't mandate its contents. Your repo's CLAUDE.md is yours to customize.
+
+## License
+
+Copyright 2025-2026 Ryan Nguyen ([knguyen2000](https://github.com/knguyen2000))
+
+Licensed under the **Apache License, Version 2.0**. You may use, fork, and modify this plugin freely, provided you:
+
+1. **Keep the LICENSE and NOTICE files** in any copy or derivative
+2. **Credit the original author** (Ryan Nguyen) — do not present this work as your own
+3. **State any changes** you make to the original
+
+See [LICENSE](LICENSE) for the full terms.
 
 ## Contributing
 
