@@ -4,11 +4,21 @@ Bootstrap the claude-workflow plugin in a new (or existing) repository. Scans th
 
 **Run once per repo.** If already initialized (`.claude/workflow.config.json` exists), warn the dev and ask before overwriting.
 
+## Prerequisite: Visibility
+
+Before any scanning or git operations, ask the developer:
+
+> **Should the workflow files be committed to this repo, or kept local-only?**
+> - **Public** — files are committed and PR'd into the repo. Collaborators can see them.
+> - **Local only** — files are generated on disk and added to `.gitignore` so they are never staged or pushed. Use this for established repos where adding new committed files isn't appropriate, but you still want the full workflow on your machine.
+
+Store the answer as **visibility mode** and carry it through Steps 0, 4, 5, 6, and 8.
+
 ## Step 0: Git setup
 
 1. If the directory is not a git repo, run `git init` and create an initial commit with existing files.
 2. Ensure you are on `main` (or `master`) — this is the only commit allowed directly on main: the bare repo bootstrap.
-3. **Create a branch:** `git checkout -b chore/init-workflow`. All workflow files are generated on this branch — never directly on main.
+3. **Create a branch:** `git checkout -b chore/init-workflow`. All changes are made on this branch — never directly on main.
 4. After all files are generated and committed (Step 8), tell the dev to PR and merge the branch. If there's no remote yet, note that they'll need to add one before creating a PR.
 
 ## Step 1: Scan the codebase
@@ -209,6 +219,8 @@ Never force-push, never merge without user approval, never push directly to main
 3. Append only the missing sections at the end
 4. Show the dev what was added and ask them to review placement
 
+**Local-only mode + CLAUDE.md already exists:** The file is already tracked by git, so `.gitignore` cannot prevent changes to it from being committed. Inform the dev and ask: commit the additions via the PR (they'll be visible to collaborators), or skip CLAUDE.md entirely and apply the sections manually later.
+
 ## Step 5: Generate or update CONTRIBUTING.md
 
 **If CONTRIBUTING.md does not exist**, create it:
@@ -274,9 +286,13 @@ Run `/resume` — Claude reads task journals, checks out the right branch, and s
 
 **If CONTRIBUTING.md already exists**, append the "Working with Claude Code" section if it's not already present. Do not overwrite existing content.
 
+**Local-only mode + CONTRIBUTING.md already exists:** Do NOT append to the existing file — it is already tracked by git, so `.gitignore` cannot prevent changes to it from being committed. Instead, create `CONTRIBUTING.claude.md` with the "Working with Claude Code" section only. This file will be gitignored in Step 6.
+
 ## Step 6: Update .gitignore
 
-Check if these patterns are already in `.gitignore`. Append any that are missing:
+Check if these patterns are already in `.gitignore`. Append any that are missing. Do not duplicate patterns that already exist.
+
+### Public mode
 
 ```
 # Planning artifacts (workflow plugin)
@@ -286,7 +302,22 @@ Check if these patterns are already in `.gitignore`. Append any that are missing
 JOURNAL-*.md
 ```
 
-Do not duplicate patterns that already exist.
+### Local-only mode
+
+```
+# claude-workflow (local-only — workflow files are machine-local only)
+/.claude/workflow.config.json
+/CLAUDE.md
+/TASKS.md
+/CONTRIBUTING.claude.md
+/SPEC.md
+/TODO.md
+JOURNAL-*.md
+```
+
+If CONTRIBUTING.md was newly created (did not exist before), also add `/CONTRIBUTING.md` to this block.
+
+Note: `.gitignore` only prevents **untracked** files from being staged. Any file that was already committed before `/init` ran cannot be hidden from git via `.gitignore` alone — that is why CONTRIBUTING.md modifications are written to `CONTRIBUTING.claude.md` instead (Step 5).
 
 ## Step 7: Create TASKS.md template
 
@@ -312,7 +343,9 @@ How many of the above should Claude tackle right now? Context windows are finite
 
 ## Step 8: Summary
 
-Report what was created/updated:
+Report what was created/updated using the appropriate template.
+
+### Public mode
 
 ```
 ## Initialized claude-workflow
@@ -331,6 +364,32 @@ Report what was created/updated:
 2. Commit, push, and create a PR to merge into main
 3. After merge — review CLAUDE.md, verify Architecture and Key Files
 4. Paste tasks into TASKS.md and run /kickoff
+```
+
+### Local-only mode
+
+```
+## Initialized claude-workflow (local-only)
+
+Workflow files were generated locally and added to .gitignore — they will never be staged or pushed.
+The only committed change is the .gitignore update itself.
+
+### Created locally (gitignored — never pushed)
+- .claude/workflow.config.json
+- CLAUDE.md (new file — gitignored; if it already existed, see note in Step 4)
+- CONTRIBUTING.claude.md (workflow commands reference)
+- TASKS.md (template — paste your tasks and run /kickoff)
+
+### Committed to branch `chore/init-workflow`
+- .gitignore (added: workflow file patterns)
+
+### Next steps
+1. Review the generated files locally
+2. PR and merge `chore/init-workflow` so the .gitignore entries land on main
+3. Paste tasks into TASKS.md and run /kickoff
+
+### To make these files public later
+Remove the claude-workflow block from .gitignore, then stage and commit the files normally.
 ```
 
 ## Rules
