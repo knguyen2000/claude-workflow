@@ -8,17 +8,38 @@ Use this when you made changes yourself and want to ship them without writing th
 
 Run `git status` and `git branch --show-current`.
 
-Stop immediately if:
-- On `main` or `master` — warn the dev and do not proceed. They should be on a feature branch.
-- No changes exist (clean working tree) — tell the dev there is nothing to commit.
+**If on `main` or `master`:** Do not stop — instead, run Steps 2 and 3 first to understand the changes and detect conventions, then come back here to suggest a branch name based on what changed. Ask the dev:
+
+```
+You are on main. It is not safe to commit directly here.
+
+Suggested branch: feat/short-description-of-change
+
+Create this branch and continue? [yes / use a different name / cancel]
+```
+
+If approved, run `git checkout -b <branch-name>` and continue. If the dev provides a different name, use that instead. If cancelled, stop.
+
+**If no changes exist** (clean working tree): stop and tell the dev there is nothing to commit.
 
 Scan all changed files for secrets patterns (API keys, tokens, passwords, private keys). If any are found, list them and stop — do not commit.
 
-## Step 2: Detect commit message convention
+## Step 2: Detect conventions
 
-Run `git log --oneline -20`.
+Run `git log --oneline -20` and `git branch -a` to detect both commit message and branch naming conventions.
 
-Look for a consistent pattern across the last 20 commits:
+**Branch naming** — look for a pattern in existing branch names:
+
+| Pattern | Convention |
+|---------|-----------|
+| `feat/`, `fix/`, `chore/` prefixes | type/slug |
+| `feature/`, `bugfix/`, `hotfix/` prefixes | longer type/slug |
+| `username/description` | owner/slug |
+| No pattern | Use `type/short-slug` as default |
+
+Use the detected branch convention when suggesting a branch name in Step 1. The slug should reflect the actual changes — short, lowercase, hyphen-separated words.
+
+**Commit message** — look for a consistent pattern across the last 20 commits:
 
 | Pattern | Convention |
 |---------|-----------|
