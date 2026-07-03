@@ -22,8 +22,6 @@ If approved, run `git checkout -b <branch-name>` and continue. If the dev provid
 
 **If no changes exist** (clean working tree): stop and tell the dev there is nothing to commit.
 
-Scan all changed files for secrets patterns (API keys, tokens, passwords, private keys). If any are found, list them and stop — do not commit.
-
 ## Step 2: Detect conventions
 
 Run `git log --oneline -20` and `git branch -a` to detect both commit message and branch naming conventions.
@@ -69,6 +67,8 @@ Run `git diff HEAD` for unstaged changes and `git diff --staged` for staged chan
 
 Check `git status` for untracked files. If any untracked files look related to the changes (same directory, same feature name), list them and ask the dev if they should be included before staging.
 
+Scan the diff for secrets patterns (API keys, tokens, passwords, private keys). If any are found, list the file and line, and stop — do not proceed to commit.
+
 Understand what changed across all files before writing anything.
 
 ## Step 4: Write the commit message
@@ -108,6 +108,8 @@ Commit with the confirmed message.
 
 Push to the current branch's upstream. If no upstream is set, push with `git push -u origin <branch-name>`.
 
+Report the commit hash and confirm the push succeeded.
+
 ## Step 7: Create PR
 
 Generate a PR title and body from the commit message and diff, then create the PR with `gh pr create`.
@@ -131,3 +133,5 @@ Generate a PR title and body from the commit message and diff, then create the P
 Keep all sections short. Use the same simple, direct language as the commit message.
 
 Create the PR against `main` (or `master`). Report the PR URL. Do not merge.
+
+If `gh` is not available or not authenticated, print the PR title and body as text so the dev can create it manually on GitHub.
