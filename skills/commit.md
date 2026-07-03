@@ -108,4 +108,26 @@ Commit with the confirmed message.
 
 Push to the current branch's upstream. If no upstream is set, push with `git push -u origin <branch-name>`.
 
-Report the commit hash and confirm the push succeeded.
+## Step 7: Create PR
+
+Generate a PR title and body from the commit message and diff, then create the PR with `gh pr create`.
+
+**Title:** same as the commit subject line.
+
+**Body:**
+
+```
+## Summary
+- [1–3 bullet points describing what changed and why]
+
+## Changes
+- [list of files or areas changed, one line each]
+
+## Test Plan
+- [ ] [specific thing to verify manually]
+- [ ] [another check if needed]
+```
+
+Keep all sections short. Use the same simple, direct language as the commit message.
+
+Create the PR against `main` (or `master`). Report the PR URL. Do not merge.
