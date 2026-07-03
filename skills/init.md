@@ -242,6 +242,7 @@ This project uses [Claude Code](https://claude.ai/code) as the primary developme
 |---------|-------------|
 | `/kickoff` | Start work — paste tasks, get a SPEC, serial vs parallel recommendation |
 | `/hotfix` | Single urgent fix — same quality checks, less ceremony |
+| `/commit` | Stage your manual changes, generate a commit message, commit, and push |
 | `/resume` | Continue work from a previous session |
 | `/preflight` | Pre-PR quality gate. Use `/preflight recheck` to re-run only failed checks. |
 | `/postmerge` | After merging a PR — verify main is healthy before merging the next |

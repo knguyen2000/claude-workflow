@@ -27,6 +27,7 @@ Then run `/init` in your repo — it scans your codebase, asks a few questions, 
 | `/init` | Bootstrap the plugin — scans your repo, generates config, CLAUDE.md, CONTRIBUTING.md |
 | `/kickoff` | Start work — paste tasks, get a SPEC, serial/parallel/hybrid recommendation |
 | `/hotfix` | Single urgent fix — same quality bar, less ceremony |
+| `/commit` | Stage your manual changes, generate a commit message, commit, and push |
 | `/preflight` | Pre-PR quality gate (tests, lint, format, secrets, docs, regression scope) |
 | `/postmerge` | Post-merge verification — required after every PR merge |
 | `/resume` | Recover context from a previous session via task journals |
