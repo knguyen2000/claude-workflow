@@ -1,0 +1,15 @@
+{
+  "name": "claude-workflow",
+  "displayName": "Claude Workflow",
+  "description": "Strict, extensibility-first development workflow for Claude Code. Provides slash commands for task intake, quality gates, post-merge verification, and session recovery.",
+  "version": "1.0.0",
+  "author": {
+    "name": "Ryan Nguyen",
+    "url": "https://github.com/knguyen2000"
+  },
+  "homepage": "https://github.com/knguyen2000/claude-workflow",
+  "repository": "https://github.com/knguyen2000/claude-workflow",
+  "license": "Apache-2.0",
+  "keywords": ["claude-code", "workflow", "quality", "tdd"],
+  "commands": "./skills/"
+}

@@ -1,0 +1,16 @@
+{
+  "name": "claude-workflow",
+  "owner": {
+    "name": "Ryan Nguyen"
+  },
+  "plugins": [
+    {
+      "name": "claude-workflow",
+      "source": "./",
+      "description": "Strict, extensibility-first development workflow for Claude Code. Provides slash commands for task intake, quality gates, post-merge verification, and session recovery.",
+      "version": "1.0.0",
+      "license": "Apache-2.0",
+      "keywords": ["claude-code", "workflow", "quality", "tdd"]
+    }
+  ]
+}
