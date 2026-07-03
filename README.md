@@ -10,7 +10,16 @@ Works with any stack. You configure your project's specifics once in a JSON file
 
 ## Install
 
-Add to your project's `.claude/settings.json`:
+Add the marketplace, then install the plugin (two separate steps — adding the marketplace alone does not install anything):
+
+```
+/plugin marketplace add knguyen2000/claude-workflow
+/plugin install claude-workflow@claude-workflow
+```
+
+This installs at user scope by default, so it becomes available in every repo you open, not just the current one.
+
+Alternatively, add directly to a project's `.claude/settings.json`:
 
 ```json
 {
@@ -130,12 +139,6 @@ See `schema/workflow-config.schema.json` for the full schema with descriptions o
 ## Overriding a command
 
 If a repo needs to customize one command, create a local `.claude/commands/<name>.md` — Claude Code resolves local commands over plugin commands. No need to fork the plugin.
-
-## What this plugin does NOT include
-
-- **`/fix`** — too tool-specific and trivially simple. If lint/format fails in `/preflight`, run your stack's fixer directly.
-- **Project-specific scaffolds** (like "add an agent mode") — these belong in the repo's local `.claude/commands/`.
-- **CLAUDE.md content** — `/init` generates a starting-point CLAUDE.md, but the plugin itself doesn't mandate its contents. Your repo's CLAUDE.md is yours to customize.
 
 ## License
 

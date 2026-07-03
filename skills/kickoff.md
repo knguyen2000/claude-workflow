@@ -82,6 +82,19 @@ Present the SPEC.md and workflow recommendation to the developer. Wait for appro
 
 Once approved, create a journal file for each task: `JOURNAL-<branch-name>.md` in the project root (gitignored). Initialize it with the task name, branch, SPEC reference, and story checklist.
 
+## Step 6: Re-sync before branching
+
+Steps 1-5 involve dev Q&A and SPEC approval, which can take a while — main may have moved since the Prerequisite sync. Before creating any branch or worktree:
+
+```
+git fetch origin
+git log HEAD..origin/main --oneline
+```
+
+If main has moved, run `git pull` (the working tree should still be clean here since no implementation has started). If it's not clean, stop and ask the dev to resolve it first.
+
+Only proceed to Execution once this check passes — that's what "main (up to date)" assumes in the diagrams below.
+
 ---
 
 ## Worktree Setup

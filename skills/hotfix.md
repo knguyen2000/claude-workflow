@@ -37,6 +37,15 @@ Present to the dev for approval. Wait before implementing.
 
 ## Step 4: Branch and implement
 
+SPEC approval (Step 3) may have taken a while — re-check main hasn't moved since Step 1 before branching:
+
+```
+git fetch origin
+git log HEAD..origin/main --oneline
+```
+
+If main has moved, run `git pull` (the working tree should still be clean here since no implementation has started). If it's not clean, stop and ask the dev to resolve it first.
+
 ```
 git checkout -b fix/<short-slug>
 ```

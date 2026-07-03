@@ -18,8 +18,9 @@ Store the answer as **visibility mode** and carry it through Steps 0, 4, 5, 6, a
 
 1. If the directory is not a git repo, run `git init` and create an initial commit with existing files.
 2. Ensure you are on `main` (or `master`) — this is the only commit allowed directly on main: the bare repo bootstrap.
-3. **Create a branch:** `git checkout -b chore/init-workflow`. All changes are made on this branch — never directly on main.
-4. After all files are generated and committed (Step 8), tell the dev to PR and merge the branch. If there's no remote yet, note that they'll need to add one before creating a PR.
+3. **Sync with remote:** if a remote exists, run `git fetch origin && git pull` to make sure local main matches remote before branching. If `pull` fails, stop and ask the dev to resolve it first.
+4. **Create a branch:** `git checkout -b chore/init-workflow`. All changes are made on this branch — never directly on main.
+5. After all files are generated and committed (Step 8), tell the dev to PR and merge the branch. If there's no remote yet, note that they'll need to add one before creating a PR.
 
 ## Step 1: Scan the codebase
 
@@ -251,6 +252,7 @@ This project uses [Claude Code](https://claude.ai/code) as the primary developme
 | `/docsync` | Audit folder-level docs for staleness |
 | `/inspect` | Browser-level check (web projects only) — light mode by default |
 | `/sweep` | Codebase cleanup — dead code, debug artifacts, gitignore gaps |
+| `/audit-workflow` | Periodic check — config health, workflow adherence, friction detection |
 
 ### Typical workflow
 

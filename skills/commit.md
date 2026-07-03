@@ -18,7 +18,25 @@ Suggested branch: feat/short-description-of-change
 Create this branch and continue? [yes / use a different name / cancel]
 ```
 
-If approved, run `git checkout -b <branch-name>` and continue. If the dev provides a different name, use that instead. If cancelled, stop.
+If approved, first check whether local main is behind the remote (don't `git pull` here — uncommitted changes are already sitting on main, and a pull could conflict with them):
+
+```
+git fetch origin
+git log HEAD..origin/main --oneline
+```
+
+If that shows commits, warn the dev before branching:
+
+```
+Local main is N commits behind origin/main.
+Branching now will base your work on an outdated main.
+
+Continue anyway, or stash changes, pull, then reapply? [continue / stash-and-pull]
+```
+
+If the dev picks stash-and-pull: `git stash`, `git pull`, `git stash pop`, then proceed. Otherwise continue with the branch as planned.
+
+Then run `git checkout -b <branch-name>` and continue. If the dev provides a different name, use that instead. If cancelled, stop.
 
 **If no changes exist** (clean working tree): stop and tell the dev there is nothing to commit.
 
