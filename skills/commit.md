@@ -1,112 +1,64 @@
 # /commit
 
-Stage all local changes, generate a commit message from the diff, commit, and push.
-
-Use this when you made changes yourself and want to ship them without writing the commit message manually.
+Stage local changes, generate a commit message from the diff, commit, push. Use when you made the changes yourself and want to ship without writing the message by hand.
 
 ## Step 1: Safety checks
 
-Run `git status` and `git branch --show-current`.
+`git status` + `git branch --show-current`.
 
-**If on `main` or `master`:** Do not stop — instead, run Steps 2 and 3 first to understand the changes and detect conventions, then come back here to suggest a branch name based on what changed. Ask the dev:
+**On `main`/`master`:** don't stop — run Steps 2-3 first (understand changes, detect conventions), then suggest a branch name:
 
 ```
 You are on main. It is not safe to commit directly here.
-
 Suggested branch: feat/short-description-of-change
-
 Create this branch and continue? [yes / use a different name / cancel]
 ```
 
-If approved, first check whether local main is behind the remote (don't `git pull` here — uncommitted changes are already sitting on main, and a pull could conflict with them):
+If approved, check whether local main is behind remote first (don't `git pull` directly — uncommitted changes are already on main and a pull could conflict):
 
 ```
 git fetch origin
 git log HEAD..origin/main --oneline
 ```
 
-If that shows commits, warn the dev before branching:
+Commits shown? Warn: `Local main is N commits behind origin/main. Continue anyway, or stash changes, pull, then reapply? [continue / stash-and-pull]`. Stash-and-pull → `git stash && git pull && git stash pop`, then proceed.
 
-```
-Local main is N commits behind origin/main.
-Branching now will base your work on an outdated main.
+`git checkout -b <branch-name>` (or the dev's name). Cancelled → stop.
 
-Continue anyway, or stash changes, pull, then reapply? [continue / stash-and-pull]
-```
-
-If the dev picks stash-and-pull: `git stash`, `git pull`, `git stash pop`, then proceed. Otherwise continue with the branch as planned.
-
-Then run `git checkout -b <branch-name>` and continue. If the dev provides a different name, use that instead. If cancelled, stop.
-
-**If no changes exist** (clean working tree): stop and tell the dev there is nothing to commit.
+**Clean tree:** stop, tell the dev there's nothing to commit.
 
 ## Step 2: Detect conventions
 
-Run `git log --oneline -20` and `git branch -a` to detect both commit message and branch naming conventions.
+`git log --oneline -20` + `git branch -a`.
 
-**Branch naming** — look for a pattern in existing branch names:
+**Branch naming:** `feat/`/`fix/`/`chore/` → type/slug; `feature/`/`bugfix/`/`hotfix/` → longer type/slug; `username/description` → owner/slug; no pattern → default `type/short-slug`. Use this for Step 1's suggestion — slug reflects the actual change, short/lowercase/hyphenated.
 
-| Pattern | Convention |
-|---------|-----------|
-| `feat/`, `fix/`, `chore/` prefixes | type/slug |
-| `feature/`, `bugfix/`, `hotfix/` prefixes | longer type/slug |
-| `username/description` | owner/slug |
-| No pattern | Use `type/short-slug` as default |
+**Commit format:** `type(scope): description` or `type: description` → Conventional Commits; `[TAG] description` → bracket tags; none → default Conventional Commits. Apply in Step 4.
 
-Use the detected branch convention when suggesting a branch name in Step 1. The slug should reflect the actual changes — short, lowercase, hyphen-separated words.
-
-**Commit message** — look for a consistent pattern across the last 20 commits:
-
-| Pattern | Convention |
-|---------|-----------|
-| `type(scope): description` | Conventional Commits (with scope) |
-| `type: description` | Conventional Commits (no scope) |
-| `[TAG] description` | Bracket tags |
-| No clear pattern | Use Conventional Commits as default |
-
-Note what was detected. Apply it when writing the message in Step 4.
-
-**Conventional Commits types:**
-
-| Type | When to use |
-|------|------------|
-| `feat` | new feature or new behavior |
-| `fix` | bug fix |
-| `docs` | documentation only |
-| `refactor` | code change with no behavior change |
-| `test` | add or update tests |
-| `chore` | config, build, tooling, dependencies |
-| `style` | formatting only, no logic change |
-| `perf` | performance improvement |
+**Types:** `feat` new feature · `fix` bug fix · `docs` docs only · `refactor` no behavior change · `test` test-only · `chore` config/build/tooling · `style` formatting only · `perf` performance.
 
 ## Step 3: Read the changes
 
-Run `git diff HEAD` for unstaged changes and `git diff --staged` for staged changes.
+`git diff HEAD` + `git diff --staged`. Check `git status` for untracked files related to the change (same dir/feature name) — ask if they should be included.
 
-Check `git status` for untracked files. If any untracked files look related to the changes (same directory, same feature name), list them and ask the dev if they should be included before staging.
+Scan the diff for secrets (API keys, tokens, passwords, private keys) — found any → list file:line and stop, don't commit.
 
-Scan the diff for secrets patterns (API keys, tokens, passwords, private keys). If any are found, list the file and line, and stop — do not proceed to commit.
-
-Understand what changed across all files before writing anything.
+Understand all changed files before writing anything.
 
 ## Step 4: Write the commit message
 
-Write one commit message that covers all the changes. Rules:
-
-- **Subject line:** under 72 characters, imperative mood (`add`, `fix`, `update` — not `added` or `adds`)
-- **Language:** simple and direct — short words, no idioms, no analogies; technical terms are fine
-- **Scope:** use the most specific part of the codebase that was changed (file name, module, command name, etc.)
-- **Body:** include only if the subject line cannot capture the full intent; 2–3 lines max, explain *why* not *what*
-- **Multiple unrelated changes:** split into separate commits (ask the dev first)
+One message covering all changes:
+- **Subject:** <72 chars, imperative mood (`add`/`fix`/`update`, not `added`/`adds`)
+- **Language:** simple, direct, no idioms — technical terms fine
+- **Scope:** most specific codebase area changed
+- **Body:** only if the subject can't capture full intent; 2-3 lines max, explains *why*
+- **Unrelated changes:** split into separate commits (ask first)
 
 ## Step 5: Confirm with the dev
-
-Show the proposed message and the files that will be staged:
 
 ```
 ## Files to stage
 - modified: path/to/file.py
-- modified: path/to/other.py
 
 ## Commit message
 type(scope): short description
@@ -116,40 +68,27 @@ Optional body line explaining why.
 Proceed? [yes / edit / cancel]
 ```
 
-Wait for the dev to confirm, provide an edited message, or cancel.
+Wait for confirmation, an edited message, or cancel.
 
 ## Step 6: Stage, commit, push
 
-Stage each file explicitly by name — never use `git add .` or `git add -A`.
-
-Commit with the confirmed message.
-
-Push to the current branch's upstream. If no upstream is set, push with `git push -u origin <branch-name>`.
-
-Report the commit hash and confirm the push succeeded.
+Stage each file explicitly by name — never `git add .` or `git add -A`. Commit. Push to upstream (`git push -u origin <branch-name>` if none set). Report the commit hash and confirm the push.
 
 ## Step 7: Create PR
 
-Generate a PR title and body from the commit message and diff, then create the PR with `gh pr create`.
-
-**Title:** same as the commit subject line.
-
-**Body:**
+`gh pr create` with title = commit subject and body:
 
 ```
 ## Summary
-- [1–3 bullet points describing what changed and why]
+- [1-3 bullets: what changed and why]
 
 ## Changes
-- [list of files or areas changed, one line each]
+- [files/areas changed, one line each]
 
 ## Test Plan
-- [ ] [specific thing to verify manually]
-- [ ] [another check if needed]
+- [ ] [thing to verify manually]
 ```
 
-Keep all sections short. Use the same simple, direct language as the commit message.
+Keep sections short, same plain language as the commit message. Target `main`/`master`. Report the PR URL — don't merge.
 
-Create the PR against `main` (or `master`). Report the PR URL. Do not merge.
-
-If `gh` is not available or not authenticated, print the PR title and body as text so the dev can create it manually on GitHub.
+No `gh` or not authenticated → print title+body as text for the dev to create manually.

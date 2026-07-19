@@ -8,21 +8,17 @@ Read `.claude/workflow.config.json` for `docs.folder_doc_names` and `docs.folder
 
 ## Scope
 
-Check every folder listed in config `docs.folders_to_check`, plus any subfolder that contains a doc file matching config `docs.folder_doc_names`. Do NOT limit to changed files — scan everything.
+Every folder in `docs.folders_to_check`, plus any subfolder with a doc file matching `docs.folder_doc_names`. Scan everything — don't limit to changed files.
 
 ## For each folder
 
-1. List all source files in the folder.
-2. Read the folder's doc files (per config `docs.folder_doc_names`).
-3. Compare docs against code:
-   - **Missing files** — source files that exist in the folder but are not mentioned in the docs.
-   - **Ghost references** — files, classes, or functions described in the docs that no longer exist in the code.
-   - **Stale descriptions** — doc describes behavior or interfaces that don't match the current code (e.g., wrong function signature, removed parameter, changed return type).
-   - **New public interfaces** — classes or public functions added to existing files but not reflected in docs.
+List source files, read the folder's doc files, compare:
+- **Missing** — source files not mentioned in docs
+- **Ghost** — docs reference files/classes/functions that no longer exist
+- **Stale** — docs describe behavior that doesn't match current code (wrong signature, removed param, changed return type)
+- **New** — new public interfaces added but not reflected in docs
 
 ## Output
-
-For each folder with findings, show:
 
 ```
 ## folder/
@@ -32,6 +28,4 @@ For each folder with findings, show:
 - NEW: file.py added NewClass, not in README.md
 ```
 
-Skip folders with no issues.
-
-End with a summary table (Folder, Missing, Ghost, Stale, New counts) and a one-line verdict: **All docs current** or **N folders need updates**.
+Skip folders with no issues. End with a summary table (Folder, Missing, Ghost, Stale, New counts) and verdict: **All docs current** or **N folders need updates**.

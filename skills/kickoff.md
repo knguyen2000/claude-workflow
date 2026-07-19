@@ -1,140 +1,103 @@
 # /kickoff
 
-Intake raw tasks from the backlog, clarify requirements, generate a SPEC.md, and recommend a workflow.
+Intake raw tasks from the backlog, clarify requirements, generate SPEC.md, recommend a workflow.
 
 ## Config
 
-Read `.claude/workflow.config.json` for project-specific values. If the file doesn't exist, stop and tell the developer to create one (copy from the plugin's `templates/workflow-config.example.json` and adapt).
+Read `.claude/workflow.config.json`. Missing? Stop and tell the dev to copy `templates/workflow-config.example.json` and adapt.
 
 ## Prerequisite: Sync main
-
-Before anything else, ensure main is up to date:
 
 ```
 git checkout main
 git pull
 ```
 
-If there are uncommitted changes on main, stop and ask the dev to resolve them first. Never plan or branch from a stale or dirty main.
+Uncommitted changes on main? Stop, ask the dev to resolve first — never plan or branch from a stale or dirty main.
 
-All planning happens on main. `SPEC.md` and `TASKS.md` are gitignored — no tracked changes are created during planning.
+All planning happens on main. `SPEC.md`/`TASKS.md` are gitignored — no tracked changes during planning.
 
 ## Input
 
-The developer pastes raw tasks into `TASKS.md` in the project root. Tasks can be in any format — copied from GitHub Issues, Linear, Jira, Slack, or plain text. The file should indicate how many tasks the dev wants to tackle in this round.
+Dev pastes raw tasks into `TASKS.md` (any format — Issues, Linear, Jira, Slack, plain text), noting how many to tackle this round. Missing? Ask them to create it.
 
-If `TASKS.md` does not exist, ask the developer to create it and paste their tasks.
+## Step 0: Size check
 
-## Step 0: Size check — redirect to /hotfix if appropriate
-
-Read `TASKS.md`. If the round contains **a single task** that is clearly a small fix (bug, config change, <5 files, one story), suggest: "This looks like a single fix — want to use `/hotfix` instead? Same quality checks, faster on-ramp."
-
-If the dev confirms, stop and run `/hotfix`. If they decline or there are multiple tasks, continue below.
+Single, clearly small task (bug, config change, <5 files, one story) in `TASKS.md`? Suggest `/hotfix` instead — same checks, faster on-ramp. Confirmed → stop, run `/hotfix`. Declined or multiple tasks → continue.
 
 ## Step 1: Parse and understand
 
-Read `TASKS.md`. For each task, extract:
-- What needs to be done (the goal)
-- Any acceptance criteria mentioned
-- Any technical constraints or context given
-- Dependencies between tasks (explicit or implied)
+For each task in `TASKS.md`, extract: the goal, acceptance criteria, technical constraints, dependencies between tasks (explicit or implied).
 
 ## Step 2: Identify gaps
 
-For each task, compare against the SPEC template. Identify what's missing:
-- Unclear scope ("improve performance" — which metric? what target?)
-- Missing acceptance criteria
-- Ambiguous user impact ("better UX" — how specifically?)
-- Unknown technical constraints (which files? which APIs? what limits?)
-- Unstated dependencies between tasks
+Compare each task against the SPEC template. Flag: unclear scope, missing acceptance criteria, ambiguous impact, unknown technical constraints, unstated dependencies.
 
-**Do NOT assume answers.** Ask the developer to fill every gap. Present questions grouped by task, clearly numbered, so the dev can answer efficiently.
-
-Wait for answers before proceeding.
+**Never assume answers.** Ask the dev, questions grouped by task and numbered. Wait for answers.
 
 ## Step 3: Generate SPEC.md
 
-Once all gaps are filled, generate a proper `SPEC.md` following the plugin's SPEC template. Include:
-- Goal (one sentence per task)
-- User stories with verifiable acceptance criteria
-- "Files likely touched" for each story (scan the codebase to determine this)
-- Modification Risk Assessment — classify each story as extend-only or modify+extend
-- Technical notes and out of scope
-- Phases section if any task is large (15+ files)
+Once gaps are filled, follow the plugin's SPEC template: goal per task, user stories with verifiable acceptance criteria, "files likely touched" per story (scan the codebase), Modification Risk Assessment (extend-only vs modify+extend per story), technical notes, out of scope, Phases section if any task is 15+ files.
 
 ## Step 4: Independence analysis
 
-For tasks the dev wants to do in this round, run the parallel eligibility check:
+For each pair of this round's tasks, check: overlapping "files likely touched"? import dependencies between them? shared state/config keys? shared UI (same page/component)?
 
-```
-For each pair of tasks:
-  1. Compare "files likely touched" lists — any overlap?
-  2. Check for import dependencies — would one task's code import the other's?
-  3. Check for shared state — do they both modify state management keys or config values?
-  4. Check for shared UI — do they both modify the same page or component?
-```
-
-Report the result as an independence matrix and recommend one of three workflows: **Serial**, **Parallel**, or **Hybrid**.
+Report as an independence matrix; recommend **Serial**, **Parallel**, or **Hybrid**.
 
 ## Step 5: Confirm and start
 
-Present the SPEC.md and workflow recommendation to the developer. Wait for approval before any implementation.
+Present SPEC.md + recommendation. Wait for approval before implementing.
 
-Once approved, create a journal file for each task: `JOURNAL-<branch-name>.md` in the project root (gitignored). Initialize it with the task name, branch, SPEC reference, and story checklist.
+Once approved, create `JOURNAL-<branch-name>.md` per task (gitignored) — task name, branch, SPEC reference, story checklist.
 
 ## Step 6: Re-sync before branching
 
-Steps 1-5 involve dev Q&A and SPEC approval, which can take a while — main may have moved since the Prerequisite sync. Before creating any branch or worktree:
+Steps 1-5 (Q&A, approval) take time — main may have moved since the Prerequisite sync.
 
 ```
 git fetch origin
 git log HEAD..origin/main --oneline
 ```
 
-If main has moved, run `git pull` (the working tree should still be clean here since no implementation has started). If it's not clean, stop and ask the dev to resolve it first.
-
-Only proceed to Execution once this check passes — that's what "main (up to date)" assumes in the diagrams below.
+Moved? `git pull` (tree should still be clean — no implementation started yet). Not clean? Stop, ask the dev to resolve. Only proceed to Execution once this passes.
 
 ---
 
-## Worktree Setup
+## Worktree Setup (parallel/hybrid only)
 
-Gitignored files (secrets, config) don't exist in new worktrees. After creating any worktree, copy required config files. Check `.gitignore` to identify what needs copying.
-
-Applies to parallel and hybrid workflows only. Serial doesn't use worktrees.
+Gitignored files (secrets, config) don't exist in new worktrees — after creating one, copy required config files per `.gitignore`. Serial doesn't use worktrees.
 
 ---
 
 ## Per-Task Cycle
 
-Every task — regardless of serial, parallel, or hybrid — follows this cycle:
+Every task, any workflow, follows this cycle:
 
 ```
 implement (TDD, extend-first) → commit per story
   │
-  /inspect (light — page loads, console errors, smoke test)
-  │  [web projects only — skip for cli/api/library]
-  │  fix any issues found, commit fixes
+  /inspect (light) [web only — skip cli/api/library]
+  │  fix issues found, commit fixes
   │
-  ← dev manual tests (business logic, UX, edge cases only —
-  │  Claude already verified the app runs and renders)
+  ← dev manual tests (business logic, UX, edge cases —
+  │  Claude already verified it runs and renders)
   │
-  if dev found bugs:
-  │  /retest → fix → /inspect again (only now, not otherwise)
+  if dev found bugs: /retest → fix → /inspect again (only then)
   │
-  /conform (on committed diff — checks patterns and style)
-  │  fix any conformance issues, commit fixes
+  /conform (on committed diff)
+  │  fix conformance issues, commit fixes
   │
-  /preflight (pre-PR gate — all checks including regression scope)
+  /preflight (pre-PR gate — all checks incl. regression scope)
   │
   done — ready for PR
 ```
 
-**Ordering:** `/conform` runs on the committed diff (post-commit). `/preflight` runs last as the final gate before PR creation. If `/preflight` fails, fix issues and run `/preflight recheck` to re-run only the failed checks.
+`/conform` runs post-commit; `/preflight` runs last. `/preflight` fails → fix → `/preflight recheck` (failed checks only).
 
-**`/inspect` runs in light mode by default** (web projects only). Use `/inspect full` only before the first PR on a UI-heavy branch or when the dev requests it. `/inspect` only runs a second time if code changed from bugfixes.
+`/inspect` defaults to light mode (web only); use `full` before a UI-heavy branch's first PR or on request; re-run only if bugfixes changed code.
 
-**Extend-first implementation:** During TDD, prefer adding new functions/modules over modifying existing code. If modification is needed, follow the Modification Protocol — read the code and callers first, justify the change, minimize scope, impact analysis, test all affected paths.
+**Extend-first:** prefer new functions/modules. If modification is needed, follow the Modification Protocol — read code + callers first, justify, minimize scope, impact analysis, test all affected paths.
 
 ---
 
@@ -143,167 +106,65 @@ implement (TDD, extend-first) → commit per story
 ```
 main (up to date)
   │
-  git checkout -b <type>/task-1
-  │  [per-task cycle]
-  │  git push -u origin <type>/task-1
-  │  create PR #1 → report URL to dev
-  │  ← dev reviews + merges PR #1
+  git checkout -b <type>/task-1 → [per-task cycle] → push → PR #1
+  │  ← dev reviews + merges
+  git checkout main && git pull → /postmerge
   │
-  git checkout main && git pull
-  /postmerge — verify main is healthy after merge
-  │
-  git checkout -b <type>/task-2
-  │  [per-task cycle]
-  │  git push → PR #2
-  │  ← dev reviews + merges PR #2
-  │
-  git checkout main && git pull
-  /postmerge
+  git checkout -b <type>/task-2 → [per-task cycle] → push → PR #2
+  │  ← dev reviews + merges
+  git checkout main && git pull → /postmerge
   │
   (repeat per task)
 ```
 
 Each task starts from a fresh, verified main. Never stack branches. Never start the next task until `/postmerge` confirms main is healthy.
 
-## Execution: Parallel
+## Execution: Parallel / Hybrid
+
+**Parallel:** one worktree per task. **Hybrid:** one worktree per independent group; tasks within a group run serially (`git checkout -b <type>/group-a-task-2` from task-1's branch, etc.).
 
 ```
 main (up to date)
   │
   ── Branch out ──────────────────────────────────
-  git worktree add ../task-1 -b <type>/task-1
-  git worktree add ../task-2 -b <type>/task-2
-  git worktree add ../task-3 -b <type>/task-3
-  + copy gitignored config (see Worktree Setup)
+  git worktree add ../task-N -b <type>/task-N   (one per task, or per group for hybrid)
+  + copy gitignored config (Worktree Setup)
 
   ── Implement ───────────────────────────────────
   Each agent in its worktree: [per-task cycle]
+  (hybrid: tasks within a group run serially, same worktree)
 
-  ── Stage 1: Dev manual tests each worktree ─────
-  (included in per-task cycle above)
+  ── Sequential integration test ─────────────────
+  Simulate real merge order on a throwaway branch — never pushed:
+  git checkout main && git checkout -b test/integration
 
-  ── Stage 2: Sequential integration test ────────
-  Simulate the real merge order on a throwaway branch:
-
-  git checkout main
-  git checkout -b test/integration        ← throwaway, never pushed
-
-  Step 1: merge task-1, then test
-    git merge <type>/task-1
+  For each branch in planned merge order:
+    git merge <type>/task-N
     Run test command
-    Start app → smoke test (web projects)
+    Smoke test (web: growing set of merged features each step)
+  Final step: full manual test of everything together + /inspect light (web)
 
-  Step 2: merge task-2 on top, then test again
-    git merge <type>/task-2
-    Run test command
-    Smoke test (both task-1 + task-2 features)
+  Failure → the issue is between that task and what's already merged.
+  Fix on the failing branch, re-run integration from the top.
 
-  Step 3: merge task-3 on top, then test everything
-    git merge <type>/task-3
-    Run test command
-    Full manual test (all 3 together)
-    /inspect (light) — final combined check (web projects)
-
-  If any step fails, the issue is between that task and the ones
-  already merged. Fix on the failing task's branch, then re-run
-  the sequential integration from the top.
-
-  ── Stage 3: Create PRs (1 per task) ────────────
-  Each feature branch creates its own PR against main.
+  ── Create PRs ───────────────────────────────────
+  One PR per task (hybrid: per task, not per group).
   Report all PR URLs with recommended merge order.
 
-  ── Stage 4: Merge with post-merge verification ─
-  Dev reviews + merges PR #1
-    → /postmerge (verify main after PR #1)
-    → only proceed to PR #2 after /postmerge passes
-
-  Rebase task-2 onto updated main → retest
-  Dev merges PR #2
-    → /postmerge (verify main after PR #1 + PR #2)
-    → only proceed to PR #3 after /postmerge passes
-
-  Rebase task-3 onto updated main → retest
-  Dev merges PR #3
-    → /postmerge (final — verify main with all 3 merged)
+  ── Merge with post-merge verification ──────────
+  For each PR in order:
+    dev reviews + merges → /postmerge → only then proceed to the next
+    (before merging, rebase the next PR's branch onto updated main → retest)
+  (parallel: strictly sequential; hybrid: groups can interleave if they don't conflict)
 
   ── If rebase conflicts ─────────────────────────
-  1. Resolve conflicts in the conflicting branch
-  2. Run test command to verify all tests pass
-  3. Run /inspect (light) only if UI files were in the conflict (web projects)
-  4. Add a resolution commit (don't force-push)
-  5. Update the PR — push the resolution commit
-  6. Dev re-reviews the conflict resolution before merging
+  Resolve on the conflicting branch → run tests → /inspect light only if UI
+  files conflicted (web) → resolution commit (no force-push) → push →
+  dev re-reviews before merging.
 
-  ── Stage 5: Cleanup ────────────────────────────
-  git worktree remove ../task-1
-  git worktree remove ../task-2
-  git worktree remove ../task-3
+  ── Cleanup ──────────────────────────────────────
+  git worktree remove ../task-N (each)
   git branch -D test/integration
-```
-
-## Execution: Hybrid
-
-Combine serial and parallel. Each independent group gets its own worktree. Within a group, tasks run serially.
-
-```
-main (up to date)
-  │
-  ── Branch out (1 worktree per group) ───────────
-  git worktree add ../group-a -b <type>/group-a-task-1
-  git worktree add ../group-b -b <type>/group-b-task-3
-  + copy gitignored config (see Worktree Setup)
-
-  ── Implement groups in parallel ────────────────
-  Group A worktree:
-    Task 1: [per-task cycle]
-    git checkout -b <type>/group-a-task-2   ← branch from task-1
-    Task 2: [per-task cycle]
-
-  Group B worktree:
-    Task 3: [per-task cycle]
-    git checkout -b <type>/group-b-task-4   ← branch from task-3
-    Task 4: [per-task cycle]
-
-  ── Stage 1: Sequential integration test ────────
-  Simulate the real merge order on a throwaway branch:
-
-  git checkout main
-  git checkout -b test/integration        ← throwaway, never pushed
-
-  Step 1: merge group A tip, then test
-    git merge <type>/group-a-task-2
-    Run test command
-    Start app → smoke test (web projects)
-
-  Step 2: merge group B tip on top, then test everything
-    git merge <type>/group-b-task-4
-    Run test command
-    Full manual test (all groups together)
-    /inspect (light) — final combined check (web projects)
-
-  If any step fails, fix on the failing group's branch,
-  then re-run the sequential integration from the top.
-
-  ── Stage 2: Create PRs ────────────────────────
-  Within each group, create 1 PR per task (not 1 per group).
-
-  ── Stage 3: Merge with post-merge verification ─
-  Merge the most foundational group first:
-
-    merge PR #1 → /postmerge
-    rebase PR #2 → retest → merge PR #2 → /postmerge
-
-    merge PR #3 → /postmerge
-    rebase PR #4 → retest → merge PR #4 → /postmerge (final)
-
-  (groups can interleave if they don't conflict)
-  Never merge the next PR until /postmerge passes on main.
-
-  ── If rebase conflicts ─────────────────────────
-  Same protocol as parallel workflow.
-
-  ── Stage 4: Cleanup ────────────────────────────
-  Remove worktrees and delete test/integration branch.
 ```
 
 ## Rules
@@ -312,9 +173,9 @@ main (up to date)
 - Never edit main directly — all work happens on feature branches
 - Never assume missing information — always ask the dev
 - Never start implementing before the dev approves the SPEC and workflow
-- Never skip the independence analysis, even if the dev says "just do them in parallel"
-- Never merge PRs without dev approval — Claude creates PRs but dev merges
-- Never merge the next PR until `/postmerge` passes on main (all workflows — serial, parallel, and hybrid)
-- Never push or PR the `test/integration` branch — it's local and throwaway
-- If the dev overrides the recommendation (e.g., forces parallel on conflicting tasks), warn about the specific conflicts but proceed if they insist
-- **Extend, don't modify** — when implementing, prefer adding new code over changing existing lines. If modification is unavoidable, follow the Modification Protocol (read first, justify, minimize scope, impact analysis, test all affected paths)
+- Never skip independence analysis, even if the dev says "just do them in parallel"
+- Never merge PRs without dev approval — Claude creates PRs, dev merges
+- Never merge the next PR until `/postmerge` passes on main (all workflows)
+- Never push or PR `test/integration` — local and throwaway
+- Dev overrides the recommendation (e.g. forces parallel on conflicting tasks)? Warn about the specific conflicts, proceed if they insist
+- **Extend, don't modify** — prefer new code over changing existing lines; if unavoidable, follow the Modification Protocol (read first, justify, minimize scope, impact analysis, test all affected paths)

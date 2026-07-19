@@ -1,18 +1,14 @@
 # /hotfix
 
-Fast on-ramp for urgent or trivial fixes. Same quality bar as `/kickoff`, but skips multi-task ceremony (independence analysis, workflow recommendation, journal).
+Fast on-ramp for urgent or trivial fixes. Same quality bar as `/kickoff`, skips multi-task ceremony (independence analysis, workflow recommendation, journal).
 
 ## Config
 
-Read `.claude/workflow.config.json` for project-specific commands and paths.
+Read `.claude/workflow.config.json` for commands and paths.
 
 ## When to use
 
-- A single task (not a batch)
-- Clearly scoped (you can describe it in one sentence)
-- Unlikely to need session recovery (fits in one session)
-
-If the fix turns out to be larger than expected (>5 files, new behavior emerging, multiple stories), stop and switch to `/kickoff`.
+Single task, describable in one sentence, fits in one session. Turns out larger than expected (>5 files, new behavior emerging, multiple stories)? Stop, switch to `/kickoff`.
 
 ## Step 1: Sync main
 
@@ -21,82 +17,64 @@ git checkout main
 git pull
 ```
 
-If main is dirty, stop and ask the dev to resolve first.
+Dirty? Stop, ask the dev to resolve first.
 
 ## Step 2: Understand the fix
 
-Ask the developer to describe the fix in one sentence. If they haven't already, ask:
-- What's broken or needs changing?
-- What's the expected behavior after the fix?
+Ask for a one-sentence description if not given. What's broken? What's the expected behavior after?
 
 ## Step 3: Generate a minimal SPEC
 
-Create `SPEC.md` with a single story using the plugin's SPEC template, but keep it tight — one story only. Must include the Modification Risk Assessment section.
-
-Present to the dev for approval. Wait before implementing.
+`SPEC.md` with one story, using the plugin's SPEC template — tight, single story, must include Modification Risk Assessment. Present for approval, wait before implementing.
 
 ## Step 4: Branch and implement
 
-SPEC approval (Step 3) may have taken a while — re-check main hasn't moved since Step 1 before branching:
+SPEC approval may have taken a while — re-check main hasn't moved since Step 1:
 
 ```
 git fetch origin
 git log HEAD..origin/main --oneline
 ```
 
-If main has moved, run `git pull` (the working tree should still be clean here since no implementation has started). If it's not clean, stop and ask the dev to resolve it first.
+Moved? `git pull` (tree should still be clean — nothing implemented yet). Not clean? Stop, ask the dev to resolve.
 
 ```
 git checkout -b fix/<short-slug>
 ```
 
-Follow the standard per-task cycle:
+Standard per-task cycle:
 
 ```
 implement (TDD, extend-first)
   │
-  /inspect (light) [web projects only]
-  │  fix any issues, commit fixes
+  /inspect (light) [web only]
+  │  fix issues, commit fixes
   │
   ← dev manual tests
   │
-  if dev found bugs:
-  │  /retest → fix → /inspect again
+  if bugs found: /retest → fix → /inspect again
   │
   /conform (on committed diff)
   │
-  /preflight (full gate — all checks including regression scope)
+  /preflight (full gate incl. regression scope)
   │
   done — ready for PR
 ```
 
-Commit per meaningful unit (usually one commit for a hotfix, but split if the fix has a distinct refactor step).
+Commit per meaningful unit (usually one commit; split if there's a distinct refactor step).
 
 ## Step 5: PR
 
-Read `SPEC.md` for PR description context, then delete it.
-
-Create PR against main using the project's PR template (Summary, Changes, Test Plan sections).
-
-Report PR URL. Dev reviews and merges.
+Read `SPEC.md` for PR context, then delete it. Create PR against main (Summary/Changes/Test Plan template). Report URL — dev reviews and merges.
 
 ## Step 6: Post-merge verification
 
-After the dev merges the PR, run `/postmerge` to verify main is healthy. Especially important for hotfixes that modified existing code.
+After merge, run `/postmerge` — especially important when the hotfix modified existing code.
 
 ## What hotfix does NOT skip
 
-- SPEC (minimal single-story version) — forces you to think before coding
-- TDD — failing test first, then fix
-- Extend-first policy — impact analysis if modifying existing code
-- `/inspect` (light) — catches rendering/console regressions (web projects)
-- `/conform` — pattern compliance
-- `/preflight` — full quality gate including regression scope
-- Dev approval before merge
+SPEC (minimal), TDD, extend-first policy, `/inspect` light, `/conform`, `/preflight`, dev approval before merge.
 
 ## What hotfix skips
 
-- Independence analysis (single task, nothing to compare)
-- Workflow recommendation (always serial, single branch)
-- Journal file (should fit in one session; if it doesn't, switch to `/kickoff`)
-- Multi-story SPEC structure (one story only)
+Independence analysis, workflow recommendation (always serial/single branch), journal file (switch to `/kickoff` if it doesn't fit one session), multi-story SPEC structure.
