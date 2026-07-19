@@ -41,6 +41,8 @@ Commits shown? Warn: `Local main is N commits behind origin/main. Continue anywa
 
 `git diff HEAD` + `git diff --staged`. Check `git status` for untracked files related to the change (same dir/feature name) — ask if they should be included.
 
+**Exclude local-only files** — never stage or suggest staging files that are machine-specific setup, even if untracked and sitting next to the change: `.env`/`.env.*`, `*.local.*`, `.claude/settings.local.json`, IDE folders (`.vscode/`, `.idea/`), OS files (`.DS_Store`, `Thumbs.db`), or anything the dev has described as personal/local config. If a file's purpose is ambiguous, ask the dev explicitly — don't stage it by default.
+
 Scan the diff for secrets (API keys, tokens, passwords, private keys) — found any → list file:line and stop, don't commit.
 
 Understand all changed files before writing anything.
@@ -92,3 +94,8 @@ Stage each file explicitly by name — never `git add .` or `git add -A`. Commit
 Keep sections short, same plain language as the commit message. Target `main`/`master`. Report the PR URL — don't merge.
 
 No `gh` or not authenticated → print title+body as text for the dev to create manually.
+
+## Rules
+
+- **Never commit without the dev's explicit confirmation.** Step 5's "Proceed?" gate is mandatory every time this command runs — no confirmation, no commit, no exceptions.
+- **Never stage or commit local-only files.** Machine-specific setup files (see Step 3) stay out of every commit by default, regardless of how they ended up in the working tree. Only include one if the dev explicitly names it and confirms.
